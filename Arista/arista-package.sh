@@ -22,11 +22,13 @@ TMP_CONFIG_DIR=./rpm_config
 CONFIG_FILES_DIR=./ConfigFiles
 
 LINUX_CONFIG_FILES_VER=1.6
-CONFIG_FILES_ITER=3
 REDIS_CONFIG_FILES_VER=1.6
 PERFORCE_CONFIG_FILES_VER=1.6
+QBIT_WORKER_CONFIG_FILES_VER=1.1
+QBIT_STORAGE_CONFIG_FILES_VER=1.1
 
 BIN_RPM_ITER=1
+CONFIG_FILES_ITER=3
 
 LICENSE=MIT
 URL=github.com/aristanetworks/telegraf
@@ -116,6 +118,18 @@ fpm -s dir -t rpm $CONFIG_FPM_ARGS --iteration "$CONFIG_FILES_ITER" -v "$REDIS_C
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-perforce.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.conf
 fpm -s dir -t rpm $CONFIG_FPM_ARGS --iteration "$CONFIG_FILES_ITER" -v "$PERFORCE_CONFIG_FILES_VER" --description "$DESCRIPTION" -n "telegraf-Perforce" etc lib || cleanup_exit 1
+
+# Qbit-storage-Config
+rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
+cp $CONFIG_FILES_DIR/telegraf-qbit-storage.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.conf
+fpm -s dir -t rpm $CONFIG_FPM_ARGS --iteration "$CONFIG_FILES_ITER" -v "$QBIT_STORAGE_CONFIG_FILES_VER" --description "$DESCRIPTION" -n "telegraf-qbit-storage" etc lib || cleanup_exit 1
+
+# Qbit-worker-Config
+rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
+cp $CONFIG_FILES_DIR/telegraf-qbit-worker.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.conf
+fpm -s dir -t rpm $CONFIG_FPM_ARGS --iteration "$CONFIG_FILES_ITER" -v "$QBIT_WORKER_CONFIG_FILES_VER" --description "$DESCRIPTION" -n "telegraf-qbit-worker" etc lib || cleanup_exit 1
+
+
 
 mv ./*.rpm RPMS
 
