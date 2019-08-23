@@ -111,6 +111,7 @@ cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_CONFIG_DIR/lib/systemd/syste
 cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_CONFIG_DIR/lib/systemd/system/telegraf.service
 mkdir -p $TMP_CONFIG_DIR/etc/telegraf
 mkdir -p $TMP_CONFIG_DIR/etc/telegraf/telegraf.d
+mkdir -p $TMP_CONFIG_DIR/usr/bin
 
 # Linux-Config
 rm -f $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
@@ -162,6 +163,12 @@ fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-qub
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-varnish.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
 fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-varnish" etc lib || cleanup_exit 1
+
+# Ninja config
+rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
+cp $CONFIG_FILES_DIR/telegraf-ninja.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
+cp ./ninjaDump $TMP_CONFIG_DIR/usr/bin/
+fpm -s dir -t rpm -d python $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-ninja" etc lib usr || cleanup_exit 1
 
 mv ./*.rpm RPMS
 
