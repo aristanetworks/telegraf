@@ -37,6 +37,8 @@ type InfluxDB struct {
 	HTTPHeaders      map[string]string `toml:"http_headers"`
 	ContentEncoding  string            `toml:"content_encoding"`
 
+	Fields map[string]string
+
 	// Path to CA file
 	SSLCA string `toml:"ssl_ca"`
 	// Path to host cert file
@@ -93,6 +95,9 @@ var sampleConfig = `
 
   ## Compress each HTTP request payload using GZIP.
   # content_encoding = "gzip"
+
+  ## Any fields provided here will be added to points logged to influx
+  # fields = {"maintainer" = "Jane Smith"}
 `
 
 // Connect initiates the primary connection to the range of provided URLs
@@ -183,6 +188,11 @@ func (i *InfluxDB) Description() string {
 // Write will choose a random server in the cluster to write to until a successful write
 // occurs, logging each unsuccessful. If all servers fail, return error.
 func (i *InfluxDB) Write(metrics []telegraf.Metric) error {
+	for _, metric := range metrics {
+		for fieldKey, fieldVal := range i.Fields {
+			metric.AddField(fieldKey, fieldVal)
+		}
+	}
 	r := metric.NewReader(metrics)
 
 	// This will get set to nil if a successful write occurs
