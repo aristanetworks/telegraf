@@ -66,6 +66,8 @@ BINARY_FPM_ARGS="\
 --prefix / \
 -a $ARCH \
 -v $version \
+--after-install ./post_install_config.sh \
+--after-remove ./post_uninstall_config.sh \
 $COMMON_FPM_ARGS"
 
 # Make a copy of the generated binaries into a tmp directory bin
@@ -92,8 +94,6 @@ CONFIG_FPM_ARGS="\
 -a noarch \
 -d telegraf \
 --config-files /etc/telegraf/ \
---after-install ./post_install_config.sh \
---after-remove ./post_uninstall_config.sh \
 -v $version \
 $COMMON_FPM_ARGS"
 
@@ -112,20 +112,10 @@ cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_CONFIG_DIR/lib/systemd/syste
 mkdir -p $TMP_CONFIG_DIR/etc/telegraf
 mkdir -p $TMP_CONFIG_DIR/etc/telegraf/telegraf.d
 
-# Linux-Config
-rm -f $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
-cp $CONFIG_FILES_DIR/telegraf-linux.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Linux" etc lib || cleanup_exit 1
-
 # Redis-Config
 rm -f $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-redis.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
 fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Redis" etc lib || cleanup_exit 1
-
-# Docker-Config
-rm -f $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
-cp $CONFIG_FILES_DIR/telegraf-docker.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Docker" etc lib || cleanup_exit 1
 
 # Perforce-Config
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
@@ -136,27 +126,6 @@ fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Per
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-swift.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
 fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Swift" etc lib || cleanup_exit 1
-
-# QUBIT Scylla config
-rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
-cp $CONFIG_FILES_DIR/telegraf-qubit-scylla.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-qubit-scylla" etc lib || cleanup_exit 1
-
-# QUBIT Scylla dev config
-rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
-cp $CONFIG_FILES_DIR/telegraf-qubit-scylla-dev.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-qubit-scylla-dev" etc lib || cleanup_exit 1
-
-
-# QUBIT Worker config
-rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
-cp $CONFIG_FILES_DIR/telegraf-qubit-worker.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-qubit-worker" etc lib || cleanup_exit 1
-
-# QUBIT Spin config
-rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
-cp $CONFIG_FILES_DIR/telegraf-qubit-spin.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-qubit-spin" etc lib || cleanup_exit 1
 
 # Varnish config
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
