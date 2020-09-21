@@ -79,11 +79,18 @@ do
     cp $GOBIN/$binary $TMP_BIN_DIR/usr/bin/
 done
 
-# Add a default telegraf configig
+# Add a default telegraf config
 mkdir -p $TMP_BIN_DIR/etc/telegraf/
 cp $CONFIG_FILES_DIR/telegraf-default.conf $TMP_BIN_DIR/etc/telegraf/telegraf.conf
 
-fpm -s dir -t rpm $BINARY_FPM_ARGS --description "$DESCRIPTION" -n "telegraf" . || cleanup_exit 1
+# copy service file
+mkdir -p $TMP_BIN_DIR/lib/systemd/system
+cp $CONFIG_FILES_DIR/telegraf-dhclient.service $TMP_BIN_DIR/lib/systemd/system/
+cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_BIN_DIR/lib/systemd/system/
+# To ensure telegraf.service is removed when the rpm itself is removed/uninstalled.
+cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_BIN_DIR/lib/systemd/system/telegraf.service
+
+fpm -s dir -t rpm $BINARY_FPM_ARGS --description "$DESCRIPTION" -n "telegraf" usr etc lib || cleanup_exit 1
 
 mv ./*.rpm RPMS
 
@@ -97,40 +104,29 @@ CONFIG_FPM_ARGS="\
 -v $version \
 $COMMON_FPM_ARGS"
 
-# Create directory structure for config files
-echo "Setting up temporary config file tree"
 mkdir $TMP_CONFIG_DIR > /dev/null 2>&1 || rm -rf $TMP_CONFIG_DIR/*
-mkdir -p $TMP_CONFIG_DIR/etc/default
-cp $CONFIG_FILES_DIR/telegraf.default $TMP_CONFIG_DIR/etc/default/telegraf
-mkdir -p $TMP_CONFIG_DIR/etc/logrotate.d
-cp $CONFIG_FILES_DIR/telegraf.logrotate $TMP_CONFIG_DIR/etc/logrotate.d/telegraf
-mkdir -p $TMP_CONFIG_DIR/lib/systemd/system
-cp $CONFIG_FILES_DIR/telegraf-dhclient.service $TMP_CONFIG_DIR/lib/systemd/system/
-cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_CONFIG_DIR/lib/systemd/system/
-# To ensure telegraf.service is removed when the rpm itself is removed/uninstalled.
-cp $CONFIG_FILES_DIR/telegraf-networkd.service $TMP_CONFIG_DIR/lib/systemd/system/telegraf.service
 mkdir -p $TMP_CONFIG_DIR/etc/telegraf
 mkdir -p $TMP_CONFIG_DIR/etc/telegraf/telegraf.d
 
 # Redis-Config
 rm -f $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-redis.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Redis" etc lib || cleanup_exit 1
+fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Redis" etc || cleanup_exit 1
 
 # Perforce-Config
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-perforce.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Perforce" etc lib || cleanup_exit 1
+fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Perforce" etc || cleanup_exit 1
 
 # Swift-Config
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-swift.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Swift" etc lib || cleanup_exit 1
+fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-Swift" etc || cleanup_exit 1
 
 # Varnish config
 rm -rf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/*
 cp $CONFIG_FILES_DIR/telegraf-varnish.conf $TMP_CONFIG_DIR/etc/telegraf/telegraf.d/
-fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-varnish" etc lib || cleanup_exit 1
+fpm -s dir -t rpm $CONFIG_FPM_ARGS --description "$DESCRIPTION" -n "telegraf-varnish" etc || cleanup_exit 1
 
 mv ./*.rpm RPMS
 
